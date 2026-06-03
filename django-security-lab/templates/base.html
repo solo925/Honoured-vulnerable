@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Security Lab{% endblock %}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
+    .navbar {
+      background: #161b22; border-bottom: 1px solid #30363d;
+      padding: 12px 24px; display: flex; align-items: center; gap: 24px;
+    }
+    .navbar a { color: #58a6ff; text-decoration: none; font-size: 13px; }
+    .navbar a:hover { color: #79c0ff; }
+    .navbar .brand { color: #f85149; font-weight: bold; font-size: 16px; }
+    .navbar .vuln-badge {
+      margin-left: auto; background: #f85149; color: #fff;
+      padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    }
+    .container { max-width: 960px; margin: 32px auto; padding: 0 24px; }
+    .card {
+      background: #161b22; border: 1px solid #30363d;
+      border-radius: 8px; padding: 24px; margin-bottom: 24px;
+    }
+    h1, h2, h3 { color: #f0f6fc; margin-bottom: 16px; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 18px; }
+    label { display: block; color: #8b949e; font-size: 12px; margin-bottom: 4px; margin-top: 12px; }
+    input[type=text], input[type=password], input[type=email],
+    input[type=url], textarea, select {
+      width: 100%; background: #0d1117; border: 1px solid #30363d;
+      color: #c9d1d9; padding: 8px 12px; border-radius: 6px;
+      font-family: monospace; font-size: 13px;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    button, .btn {
+      background: #238636; color: #fff; border: none;
+      padding: 8px 20px; border-radius: 6px; cursor: pointer;
+      font-family: monospace; font-size: 13px; margin-top: 16px;
+      display: inline-block; text-decoration: none;
+    }
+    .btn-danger { background: #da3633; }
+    .btn-secondary { background: #21262d; border: 1px solid #30363d; }
+    .error  { background: #3d1f1f; border: 1px solid #f85149; color: #f85149;
+              padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-size: 13px; }
+    .success{ background: #1a2e1a; border: 1px solid #238636; color: #3fb950;
+              padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-size: 13px; }
+    .vuln-box {
+      background: #2d1b00; border: 1px solid #d29922; border-radius: 6px;
+      padding: 14px; margin: 16px 0; font-size: 12px; color: #d29922;
+    }
+    .vuln-box code { background: #1c1e24; padding: 1px 5px; border-radius: 3px; color: #ffa657; }
+    pre {
+      background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+      padding: 14px; overflow-x: auto; font-size: 12px; color: #79c0ff;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #21262d; color: #8b949e; padding: 8px 12px; text-align: left; }
+    td { padding: 8px 12px; border-bottom: 1px solid #21262d; }
+    tr:hover td { background: #1c2128; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <span class="brand">☠ SecurityLab</span>
+  <a href="/dashboard/">Dashboard</a>
+  <a href="/profiles/view/">Profile</a>
+  <a href="/feedback/wall/">Feedback</a>
+  <a href="/documents/list/">Docs</a>
+  <a href="/dashboard/url-preview/">SSRF</a>
+  <a href="/dashboard/ping/">Ping</a>
+  <a href="/dashboard/xml-import/">XXE</a>
+  <a href="/dashboard/deserialize/">Pickle</a>
+  <a href="/dashboard/debug/">Debug</a>
+  {% if user.is_authenticated %}
+    <a href="/accounts/logout/" style="margin-left:auto">Logout ({{ user.username }})</a>
+  {% else %}
+    <a href="/accounts/login/" style="margin-left:auto">Login</a>
+  {% endif %}
+  <span class="vuln-badge">VULNERABLE</span>
+</nav>
+<div class="container">
+  {% block content %}{% endblock %}
+</div>
+</body>
+</html>

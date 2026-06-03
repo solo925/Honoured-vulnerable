@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Profile – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>👤 {{ profile.user.username }}'s Profile</h1>
+
+  <div class="vuln-box">
+    <strong>[V-13] Stored XSS</strong><br>
+    The bio is rendered with <code>|safe</code> — no HTML escaping.<br>
+    Payload stored in bio: <code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code><br><br>
+    <strong>[V-14] IDOR</strong><br>
+    View any user's profile: <code>/profiles/view/?user_id=1</code>
+  </div>
+
+  <label>Username</label>
+  <p>{{ profile.user.username }}</p>
+
+  <label>Bio</label>
+  <div style="border:1px solid #30363d;padding:12px;border-radius:6px;margin-top:4px">
+    {# ❌ VULNERABLE: |safe disables auto-escaping – executes injected scripts #}
+    {{ profile.bio|safe }}
+  </div>
+
+  {% if profile.website %}
+    <label>Website</label>
+    {# ❌ VULNERABLE: href not validated – javascript: protocol works #}
+    <p><a href="{{ profile.website }}" style="color:#58a6ff">{{ profile.website }}</a></p>
+  {% endif %}
+
+  {% if profile.avatar %}
+    <label>Avatar</label><br>
+    <img src="{{ profile.avatar.url }}" style="max-width:120px;border-radius:8px;margin-top:8px">
+  {% endif %}
+
+  <br>
+  <a href="/profiles/edit/" class="btn btn-secondary">Edit Profile</a>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>✏️ Edit Profile</h1>
+
+  <div class="vuln-box">
+    <strong>[V-13] Stored XSS</strong> — bio accepts raw HTML/JS.<br>
+    <strong>[V-14] IDOR via POST</strong> — add <code>user_id=&lt;victim&gt;</code> to overwrite anyone's bio.<br>
+    <strong>[V-15] Unrestricted Upload</strong> — avatar accepts any file (.html, .exe, .php …).
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {# Hidden field — change this to any user_id to overwrite their profile (IDOR) #}
+    <input type="hidden" name="user_id" value="">
+    <label>Bio (HTML allowed!)</label>
+    <textarea name="bio">{{ profile.bio }}</textarea>
+    <label>Website URL</label>
+    <input type="url" name="website" value="{{ profile.website }}">
+    <label>Avatar (no file-type restrictions)</label>
+    <input type="file" name="avatar" style="color:#c9d1d9;margin-top:8px">
+    <button type="submit">Save</button>
+  </form>
+</div>
+{% endblock %}

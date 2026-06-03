@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Upload Document – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>📁 Upload Document</h1>
+
+  <div class="vuln-box">
+    <strong>[V-20] Unrestricted File Upload</strong><br>
+    No MIME type or extension validation. Try uploading:<br>
+    <code>.html</code> with <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> → browse to <code>/media/documents/yourfile.html</code><br>
+    <code>.exe</code>, <code>.php</code>, <code>.py</code> — all accepted.
+  </div>
+
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>Document Title</label>
+    <input type="text" name="title" value="My Document">
+    <label>File (any type accepted)</label>
+    <input type="file" name="file" style="color:#c9d1d9;margin-top:8px">
+    <button type="submit">Upload</button>
+  </form>
+</div>
+{% endblock %}

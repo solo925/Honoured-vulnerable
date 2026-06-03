@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Search Feedback – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>🔍 Search Feedback</h1>
+
+  <div class="vuln-box">
+    <strong>[V-18] Reflected XSS</strong><br>
+    The <code>?q=</code> parameter is echoed back with <code>|safe</code>.<br>
+    Try: <code>/feedback/search/?q=&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code><br>
+    Or:  <code>/feedback/search/?q=&lt;img src=x onerror=alert(1)&gt;</code>
+  </div>
+
+  <form method="get">
+    <label>Search term</label>
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <input type="text" name="q" value="{{ query }}" style="flex:1">
+      <button type="submit" style="margin-top:0">Search</button>
+    </div>
+  </form>
+
+  {% if query %}
+  <div style="margin-top:16px;color:#8b949e;font-size:13px">
+    {# ❌ VULNERABLE: query rendered unescaped #}
+    Results for: {{ query|safe }}
+  </div>
+  {% endif %}
+
+  {% for entry in results %}
+  <div style="border:1px solid #30363d;border-radius:6px;padding:12px;margin-top:12px">
+    <strong style="color:#f0f6fc">{{ entry.name }}</strong>
+    <p style="margin-top:8px;font-size:13px">{{ entry.message|safe }}</p>
+  </div>
+  {% empty %}
+    {% if query %}<p style="margin-top:16px;color:#8b949e">No results.</p>{% endif %}
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Debug Info – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>🐛 Debug Info Endpoint</h1>
+
+  <div class="vuln-box">
+    <strong>[V-29] Sensitive Data Exposure via Debug Endpoint</strong><br>
+    This endpoint dumps Django settings, environment variables, and more.<br>
+    Also reachable via SSRF: <code>http://127.0.0.1:8000/dashboard/debug/</code>
+  </div>
+
+  <h2 style="margin-top:24px">Django Settings</h2>
+  <table>
+    <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+    <tbody>
+      {% for k, v in settings.items %}
+      <tr>
+        <td style="color:#ffa657;width:35%">{{ k }}</td>
+        <td style="word-break:break-all;font-size:11px">{{ v }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2 style="margin-top:24px">Environment Variables</h2>
+  <table>
+    <thead><tr><th>Variable</th><th>Value</th></tr></thead>
+    <tbody>
+      {% for k, v in env.items %}
+      <tr>
+        <td style="color:#ffa657;width:35%">{{ k }}</td>
+        <td style="word-break:break-all;font-size:11px">{{ v }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

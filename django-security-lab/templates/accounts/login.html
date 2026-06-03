@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Login – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>🔐 Login</h1>
+
+  <div class="vuln-box">
+    <strong>[V-08] SQL Injection</strong><br>
+    The username is interpolated directly into raw SQL.<br><br>
+    <strong>Bypass auth:</strong> <code>admin'--</code> (any password)<br>
+    <strong>Always true:</strong> <code>' OR '1'='1'--</code><br>
+    <strong>Error-based dump:</strong> <code>' AND 1=CAST((SELECT username FROM accounts_user LIMIT 1) AS INTEGER)--</code><br><br>
+    <strong>[V-09] Username Enumeration</strong><br>
+    Error message differs for "no user" vs "wrong password".
+  </div>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Username</label>
+    <input type="text" name="username" autofocus>
+    <label>Password</label>
+    <input type="password" name="password">
+    <button type="submit">Login</button>
+  </form>
+
+  <p style="margin-top:16px;font-size:12px;color:#8b949e">
+    <a href="/accounts/register/" style="color:#58a6ff">Register</a> ·
+    <a href="/accounts/reset/"    style="color:#58a6ff">Forgot password?</a>
+  </p>
+</div>
+{% endblock %}

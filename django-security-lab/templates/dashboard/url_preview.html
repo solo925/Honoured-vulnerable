@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}URL Preview (SSRF) – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>🌐 URL Preview – SSRF Demo</h1>
+
+  <div class="vuln-box">
+    <strong>[V-24] Server-Side Request Forgery (SSRF)</strong><br>
+    The server fetches any URL you provide — no allowlist, no private-IP block.<br><br>
+    <strong>Targets to try:</strong><br>
+    <code>http://127.0.0.1:8000/dashboard/debug/</code> — internal debug endpoint<br>
+    <code>http://169.254.169.254/latest/meta-data/</code> — AWS Instance Metadata (EC2)<br>
+    <code>http://metadata.google.internal/computeMetadata/v1/</code> — GCP metadata<br>
+    <code>http://127.0.0.1:6379/</code> — local Redis (if running)<br>
+    <code>http://127.0.0.1:8080/</code> — the listener server<br>
+    <code>file:///etc/passwd</code> — local file read via file:// scheme
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <label>URL to fetch</label>
+    <input type="text" name="url" value="{{ url }}" placeholder="http://...">
+    <button type="submit">Fetch</button>
+  </form>
+
+  {% if error %}
+    <div class="error">Error: {{ error }}</div>
+  {% endif %}
+
+  {% if result %}
+    <label style="margin-top:16px">Response (first 4 KB)</label>
+    <pre>{{ result }}</pre>
+  {% endif %}
+</div>
+{% endblock %}

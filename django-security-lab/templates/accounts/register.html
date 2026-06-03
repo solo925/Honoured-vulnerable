@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Register – SecurityLab{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>📝 Register</h1>
+
+  <div class="vuln-box">
+    <strong>[V-04] No Password Requirements</strong><br>
+    Any password (including empty string) is accepted.<br><br>
+    <strong>[V-12] Username Enumeration</strong><br>
+    The error message reveals whether a username is taken.
+  </div>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Username</label>
+    <input type="text" name="username">
+    <label>Password (no requirements!)</label>
+    <input type="password" name="password">
+    <button type="submit">Register</button>
+  </form>
+  <p style="margin-top:16px;font-size:12px;color:#8b949e">
+    Already have an account? <a href="/accounts/login/" style="color:#58a6ff">Login</a>
+  </p>
+</div>
+{% endblock %}

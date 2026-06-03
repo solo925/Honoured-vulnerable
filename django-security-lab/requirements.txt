@@ -1,0 +1,4 @@
+django>=4.2,<5.0
+Pillow>=10.0        # for ImageField in profiles
+flask>=3.0          # for the listener server
+# lxml>=5.0         # uncomment to demo full XXE (replace ET with lxml in xml_import view)
