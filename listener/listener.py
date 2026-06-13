@@ -44,5 +44,7 @@ def log_request(path):
     return "received\n", 200
 
 if __name__ == "__main__":
-    print("Listener started on http://0.0.0.0:8080")
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    import os
+    port = int(os.environ.get("LISTENER_PORT", "8080"))
+    print(f"Listener started on http://0.0.0.0:{port}")
+    app.run(host="0.0.0.0", port=port, debug=False)

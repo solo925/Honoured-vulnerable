@@ -45,8 +45,15 @@ def login_view(request):
                 cursor.execute(query)          # raw SQL, no parameterisation
                 row = cursor.fetchone()
             except Exception as exc:
-                # [V-01] DEBUG=True will render the full traceback in the browser
-                raise exc
+                # Avoid crashing the whole request if the raw SQL or DB layer
+                # misbehaves (e.g. DB driver formatting issues).  For the lab
+                # we keep the raw SQL (intentional vulnerability) but handle
+                # unexpected exceptions gracefully so the login page shows an
+                # error instead of a 500 stack trace.
+                row = None
+                # Optionally log the exception to the console for debugging
+                import logging
+                logging.exception("accounts.login_view: raw SQL execution failed")
 
         if row:
             # Manually load and authenticate the Django user object

